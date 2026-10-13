@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Travel Concierge</title>
+<!-- Material Symbols for icons and A2UI support -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
+<style>
+  :root {
+    --accent: #0284c7;
+    --accent-dark: #0369a1;
+    --bg: #f8fafc;
+    --card-bg: #ffffff;
+    --border: #e2e8f0;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --bubble-agent: #ffffff;
+    --footer-bg: #ffffff;
+    --chip-bg: #f8fafc;
+    --chip-hover: #e0f2fe;
+    --input-bg: #f8fafc;
+  }
+
+  [data-theme="dark"] {
+    --accent: #38bdf8;
+    --accent-dark: #0284c7;
+    --bg: #0b1329;
+    --card-bg: #152238;
+    --border: #243553;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --bubble-agent: #152238;
+    --footer-bg: #0f1a2e;
+    --chip-bg: #1e2e4a;
+    --chip-hover: #1e3a66;
+    --input-bg: #182844;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    color: var(--text-primary);
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    color: #fff;
+    padding: .85rem 1.4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(2, 132, 199, 0.2);
+    z-index: 10;
+  }
+  .header-left { display: flex; align-items: center; gap: .75rem; }
+  .header-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .header-icon .material-symbols-outlined { color: #fff; font-size: 1.4rem; }
+  .header-title { font-weight: 700; font-size: 1.15rem; line-height: 1.2; }
+  .header-subtitle { font-size: 0.78rem; opacity: 0.9; font-weight: 400; }
+  .header-actions { display: flex; align-items: center; gap: .55rem; }
+
+  .header-action-btn {
+    background: rgba(255, 255, 255, 0.18);
+    border: none;
+    color: #fff;
+    padding: .35rem .65rem;
+    border-radius: 12px;
+    font-size: .8rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+    transition: all 0.2s;
+  }
+  .header-action-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+  }
+  .header-badge {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    background: rgba(255, 255, 255, 0.15);
+    padding: .35rem .65rem;
+    border-radius: 12px;
+    font-size: .75rem;
+    font-weight: 500;
+  }
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 8px #4ade80;
+  }
+
+  /* Chat Log & Dialogue */
+  #log {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem 1.2rem;
+    max-width: 840px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+  .welcome-card {
+    text-align: center;
+    margin: 2.5rem auto 1rem;
+    padding: 2.2rem 1.8rem;
+    background: var(--card-bg);
+    border: 1px dashed var(--border);
+    border-radius: 20px;
+    max-width: 560px;
+    box-shadow: 0 4px 20px -4px rgba(15, 23, 42, 0.05);
+    transition: background 0.2s;
+  }
+  .welcome-icon { font-size: 2.8rem; margin-bottom: .6rem; }
+  .welcome-card h2 { margin: 0 0 .5rem; font-size: 1.35rem; color: var(--text-primary); font-weight: 700; }
+  .welcome-card p { margin: 0; color: var(--text-secondary); font-size: .92rem; line-height: 1.55; }
+
+  /* Messages */
+  .msg {
+    display: flex;
+    gap: .75rem;
+    max-width: 88%;
+    animation: fadeIn .25s ease-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .msg.user {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+  }
+  .msg.agent {
+    align-self: flex-start;
+  }
+  .msg-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .msg.agent .msg-avatar {
+    background: #e0f2fe;
+    color: #0284c7;
+    box-shadow: 0 2px 6px rgba(2, 132, 199, 0.15);
+  }
+  .msg.agent .msg-avatar .material-symbols-outlined {
+    font-size: 1.25rem;
+    color: #0284c7;
+  }
+  .msg.user .msg-avatar {
+    background: var(--border);
+    color: var(--text-secondary);
+  }
+  .msg.user .msg-avatar .material-symbols-outlined {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+  }
+  .msg-content {
+    display: flex;
+    flex-direction: column;
+    gap: .3rem;
+    max-width: 100%;
+    position: relative;
+  }
+  .msg-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+  }
+  .msg-meta {
+    font-size: .75rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    padding: 0 .2rem;
+  }
+  .msg.user .msg-meta {
+    text-align: right;
+  }
+  .copy-btn {
+    opacity: 0;
+    transition: opacity 0.2s, background 0.2s;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: .75rem;
+    color: var(--text-secondary);
+    display: inline-flex;
+    align-items: center;
+    gap: .2rem;
+    padding: 2px 6px;
+    border-radius: 6px;
+  }
+  .msg:hover .copy-btn { opacity: 1; }
+  .copy-btn:hover { background: var(--chip-hover); color: var(--accent); }
+
+  .bubble {
+    display: inline-block;
+    padding: .85rem 1.15rem;
+    border-radius: 18px 18px 18px 4px;
+    background: var(--bubble-agent);
+    border: 1px solid var(--border);
+    text-align: left;
+    box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.06);
+    line-height: 1.55;
+    color: var(--text-primary);
+    font-size: .95rem;
+    transition: background 0.2s, border 0.2s;
+  }
+  .bubble h1, .bubble h2, .bubble h3 { margin: .5rem 0 .3rem; }
+  .bubble h2 { font-size: 1.15rem; }
+  .bubble h3 { font-size: 1.05rem; }
+  .bubble ul, .bubble ol { margin: .4rem 0; padding-left: 1.3rem; }
+  .bubble li { margin-bottom: .25rem; }
+  .bubble p { margin: .4rem 0; }
+  .bubble strong { color: var(--text-primary); font-weight: 600; }
+  .bubble code { background: rgba(0,0,0,0.06); padding: .15rem .35rem; border-radius: 4px; font-size: .9em; }
+
+  .msg.user .bubble {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 18px 18px 4px 18px;
+    box-shadow: 0 4px 12px -2px rgba(2, 132, 199, 0.3);
+  }
+  .msg.user .bubble strong { color: #ffffff; }
+  .bubble.rich {
+    background: transparent;
+    border: none;
+    padding: 0;
+    box-shadow: none;
+    max-width: 100%;
+  }
+
+  /* Typing animation */
+  .typing-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 6px;
+  }
+  .typing-indicator span {
+    width: 6px;
+    height: 6px;
+    background: #94a3b8;
+    border-radius: 50%;
+    animation: typingBounce 1.4s infinite ease-in-out both;
+  }
+  .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+  .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+  @keyframes typingBounce {
+    0%, 80%, 100% { transform: scale(0); opacity: 0.4; }
+    40% { transform: scale(1); opacity: 1; }
+  }
+
+  /* Input Footer & Example Prompts */
+  .footer-container {
+    background: var(--footer-bg);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.03);
+    transition: background 0.2s, border 0.2s;
+  }
+  .prompts-bar {
+    display: flex;
+    gap: .5rem;
+    padding: .75rem 1rem 0;
+    max-width: 840px;
+    margin: 0 auto;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+  .prompt-chip {
+    padding: .4rem .85rem;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--chip-bg);
+    color: var(--text-primary);
+    font-size: .82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .15s ease;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+  }
+  .prompt-chip:hover {
+    background: var(--chip-hover);
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-1px);
+  }
+  form {
+    display: flex;
+    gap: .6rem;
+    padding: .75rem 1rem 1rem;
+    max-width: 840px;
+    margin: 0 auto;
+  }
+  input {
+    flex: 1;
+    padding: .8rem 1.15rem;
+    border: 1.5px solid var(--border);
+    border-radius: 24px;
+    font-size: .95rem;
+    outline: none;
+    transition: all .2s ease;
+    background: var(--input-bg);
+    color: var(--text-primary);
+  }
+  input:focus {
+    background: var(--card-bg);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+  }
+  button.send-btn {
+    padding: .75rem 1.35rem;
+    border: none;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    transition: all .2s ease;
+    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
+  }
+  button.send-btn:hover {
+    opacity: 0.95;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+  }
+
+  /* --- A2UI component styles (Card, Column, Row, Text, Divider, List, Image, Icon) --- */
+  .a2card {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.2rem;
+    background: var(--card-bg);
+    box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.08);
+    max-width: 100%;
+    transition: background 0.2s, border 0.2s;
+  }
+  .a2card + .a2card, .a2col > .a2card { margin-top: .6rem; }
+  .a2col { display: flex; flex-direction: column; gap: .5rem; }
+  .a2row { display: flex; flex-direction: row; gap: .6rem; align-items: center; flex-wrap: wrap; }
+  .a2row.between { justify-content: space-between; }
+  .a2text { margin: 0; line-height: 1.45; }
+  .a2text.a2-h1 { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); }
+  .a2text.a2-h2 { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); }
+  .a2text.a2-h3 { font-size: 1.1rem; font-weight: 600; color: var(--text-primary); }
+  .a2text.a2-h4 { font-size: 1rem; font-weight: 600; color: var(--text-primary); }
+  .a2text.a2-caption { font-size: .85rem; color: var(--text-secondary); }
+  .a2divider { border: none; border-top: 1px solid var(--border); margin: .5rem 0; width: 100%; }
+  
+  .a2img {
+    max-width: 100%;
+    border-radius: 12px;
+    display: block;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    cursor: zoom-in;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: linear-gradient(110deg, #eceff1 8%, #f5f5f5 18%, #eceff1 33%);
+    background-size: 200% 100%;
+    animation: 1.5s shine linear infinite;
+  }
+  @keyframes shine { to { background-position-x: -200%; } }
+  .a2img.loaded { animation: none; background: transparent; }
+  .a2img:hover {
+    transform: scale(1.015);
+    box-shadow: 0 8px 24px rgba(2, 132, 199, 0.2);
+  }
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-size: 1.25rem;
+    line-height: 1;
+    vertical-align: middle;
+  }
+
+  /* Lightbox Modal */
+  .lightbox-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1.5rem;
+    animation: fadeIn .2s ease-out;
+  }
+  .lightbox-overlay.active { display: flex; }
+  .lightbox-content {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 1rem;
+    max-width: 900px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .8rem;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    position: relative;
+  }
+  .lightbox-img {
+    max-width: 100%;
+    max-height: 70vh;
+    border-radius: 10px;
+    object-fit: contain;
+  }
+  .lightbox-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 0 .5rem;
+  }
+  .lightbox-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: .5rem 1rem;
+    font-weight: 600;
+    font-size: .88rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+  }
+  .lightbox-btn.close {
+    background: var(--border);
+    color: var(--text-primary);
+  }
+  .lightbox-btn:hover { opacity: 0.9; }
+</style>
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <div class="header-icon">
+      <span class="material-symbols-outlined">travel_explore</span>
+    </div>
+    <div>
+      <div class="header-title">Travel Concierge</div>
+      <div class="header-subtitle">AI Local Explorer & Itinerary Guide</div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button id="theme-btn" class="header-action-btn" title="Toggle Dark/Light Mode" onclick="toggleTheme()">
+      <span id="theme-icon" class="material-symbols-outlined" style="font-size:1.1rem">dark_mode</span>
+    </button>
+    <button id="reset-btn" class="header-action-btn" title="Start a fresh trip session" onclick="resetChat()">
+      <span class="material-symbols-outlined" style="font-size:1.1rem">restart_alt</span>
+      <span>New Trip</span>
+    </button>
+    <div class="header-badge">
+      <span class="status-dot"></span>
+      <span>Connected</span>
+    </div>
+  </div>
+</header>
+
+<div id="log">
+  <div id="welcome-banner" class="welcome-card">
+    <div class="welcome-icon">🌍</div>
+    <h2>Welcome to Travel Concierge</h2>
+    <p>Discover curated destinations, check live weather, convert currencies, plan custom itineraries with budget estimation, and generate scenic destination postcards.</p>
+  </div>
+</div>
+
+<div class="footer-container">
+  <div class="prompts-bar">
+    <button type="button" class="prompt-chip" onclick="sendPrompt('Show me a travel card for Tokyo, Japan')">🌸 Tokyo travel card</button>
+    <button type="button" class="prompt-chip" onclick="sendPrompt('Plan a 3-day budget itinerary for Paris with daily costs')">🗺️ 3-day Paris budget</button>
+    <button type="button" class="prompt-chip" onclick="sendPrompt('Find gluten-free friendly dining and spots in Kyoto')">🍜 Kyoto dining & spots</button>
+    <button type="button" class="prompt-chip" onclick="sendPrompt('What is the weather and best beaches in Honolulu?')">☀️ Honolulu weather & beaches</button>
+    <button type="button" class="prompt-chip" onclick="sendPrompt('Curate historic Roman ruins and landmarks in Rome')">🏛️ Rome historical sites</button>
+  </div>
+  <form id="form">
+    <input id="input" placeholder="Ask Travel Concierge about any destination or trip…" autocomplete="off" autofocus>
+    <button class="send-btn">
+      <span class="material-symbols-outlined" style="font-size:1.15rem">send</span>
+      <span>Send</span>
+    </button>
+  </form>
+</div>
+
+<!-- Postcard Lightbox Modal -->
+<div id="lightbox" class="lightbox-overlay" onclick="closeLightbox(event)">
+  <div class="lightbox-content" onclick="event.stopPropagation()">
+    <img id="lightbox-img" class="lightbox-img" src="" alt="Destination Postcard">
+    <div class="lightbox-actions">
+      <span id="lightbox-caption" style="font-size:0.9rem; color:var(--text-secondary)">Destination Postcard</span>
+      <div style="display:flex; gap:0.5rem">
+        <a id="lightbox-download" class="lightbox-btn" href="#" target="_blank" download="postcard.jpg">
+          <span class="material-symbols-outlined" style="font-size:1rem">download</span>
+          <span>Download</span>
+        </a>
+        <button class="lightbox-btn close" onclick="closeLightbox()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const log = document.getElementById("log");
+const form = document.getElementById("form");
+const input = document.getElementById("input");
+let activeUserId = localStorage.getItem("travel_concierge_user_id") || "user-" + Math.random().toString(36).slice(2, 10);
+localStorage.setItem("travel_concierge_user_id", activeUserId);
+
+// Theme Toggle
+function initTheme() {
+  const saved = localStorage.getItem("travel_concierge_theme");
+  if (saved === "dark" || (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+    document.documentElement.setAttribute("data-theme", "dark");
+    document.getElementById("theme-icon").textContent = "light_mode";
+  }
+}
+initTheme();
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute("data-theme");
+  const next = current === "dark" ? "light" : "dark";
+  if (next === "dark") {
+    document.documentElement.setAttribute("data-theme", "dark");
+    document.getElementById("theme-icon").textContent = "light_mode";
+    localStorage.setItem("travel_concierge_theme", "dark");
+  } else {
+    document.documentElement.removeAttribute("data-theme");
+    document.getElementById("theme-icon").textContent = "dark_mode";
+    localStorage.setItem("travel_concierge_theme", "light");
+  }
+}
+
+// Reset Chat / New Trip
+function resetChat() {
+  activeUserId = "user-" + Math.random().toString(36).slice(2, 10);
+  localStorage.setItem("travel_concierge_user_id", activeUserId);
+  log.innerHTML = `
+    <div id="welcome-banner" class="welcome-card">
+      <div class="welcome-icon">🌍</div>
+      <h2>Welcome to Travel Concierge</h2>
+      <p>Discover curated destinations, check live weather, convert currencies, plan custom itineraries with budget estimation, and generate scenic destination postcards.</p>
+    </div>
+  `;
+}
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+
+// Lightbox
+function openLightbox(src, alt) {
+  const box = document.getElementById("lightbox");
+  const img = document.getElementById("lightbox-img");
+  const cap = document.getElementById("lightbox-caption");
+  const dl = document.getElementById("lightbox-download");
+  img.src = src;
+  cap.textContent = alt || "Destination Postcard";
+  dl.href = src;
+  box.classList.add("active");
+}
+function closeLightbox(e) {
+  document.getElementById("lightbox").classList.remove("active");
+}
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeLightbox();
+});
+
+// Markdown Parser
+function parseMarkdown(md) {
+  if (!md) return "";
+  let html = md
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+    .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/gim, '<em>$1</em>')
+    .replace(/`([^`]+)`/gim, '<code>$1</code>')
+    .replace(/^\s*[-*]\s+(.*$)/gim, '<li>$1</li>');
+  
+  html = html.replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>');
+  html = html.replace(/<\/ul>\s*<ul>/g, '');
+  return html.split(/\n\n+/).map(p => {
+    p = p.trim();
+    if (!p) return "";
+    if (p.startsWith("<h") || p.startsWith("<ul") || p.startsWith("<li")) return p;
+    return `<p>${p.replace(/\n/g, '<br>')}</p>`;
+  }).join("");
+}
+
+// Copy to Clipboard
+function copyBubble(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:0.95rem">check</span> Copied!';
+    setTimeout(() => {
+      btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:0.95rem">content_copy</span> Copy';
+    }, 1800);
+  });
+}
+
+function bubble(who) {
+  const welcome = document.getElementById("welcome-banner");
+  if (welcome) welcome.style.display = "none";
+
+  const m = el("div", "msg " + who);
+  const avatar = el("div", "msg-avatar");
+  if (who === "agent") {
+    avatar.innerHTML = '<span class="material-symbols-outlined">travel_explore</span>';
+  } else {
+    avatar.innerHTML = '<span class="material-symbols-outlined">person</span>';
+  }
+
+  const content = el("div", "msg-content");
+  const headerRow = el("div", "msg-header-row");
+  const meta = el("div", "msg-meta", who === "agent" ? "Travel Concierge" : "You");
+  headerRow.appendChild(meta);
+
+  if (who === "agent") {
+    const copyBtn = el("button", "copy-btn");
+    copyBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:0.95rem">content_copy</span> Copy';
+    headerRow.appendChild(copyBtn);
+  }
+
+  const b = el("div", "bubble");
+
+  content.appendChild(headerRow);
+  content.appendChild(b);
+  m.appendChild(avatar);
+  m.appendChild(content);
+
+  log.appendChild(m);
+  log.scrollTop = log.scrollHeight;
+  return b;
+}
+
+/* ----------------------------------------------------------------------------
+ * A2UI mini-renderer (v0.8 Basic Catalog subset).
+ * -------------------------------------------------------------------------- */
+
+function boundStr(v) {
+  if (v == null) return "";
+  if (typeof v === "string") return v;
+  if (typeof v.literalString === "string") return v.literalString;
+  return "";
+}
+
+function childIds(props) {
+  const ids = [];
+  if (props && typeof props.child === "string") ids.push(props.child);
+  const ch = props && props.children;
+  if (ch && Array.isArray(ch.explicitList)) for (const c of ch.explicitList) if (typeof c === "string") ids.push(c);
+  return ids;
+}
+
+function toSnake(s) {
+  return (s || "").replace(/([a-z0-9])([A-Z])/g, "$1_$2").toLowerCase();
+}
+
+function renderComponent(comp, compMap) {
+  const type = Object.keys(comp.component || {})[0];
+  const props = (comp.component || {})[type] || {};
+
+  switch (type) {
+    case "Card": {
+      const d = el("div", "a2card");
+      for (const cid of childIds(props)) {
+        const c = compMap.get(cid);
+        if (c) d.appendChild(renderComponent(c, compMap));
+      }
+      return d;
+    }
+    case "Column": {
+      const d = el("div", "a2col");
+      for (const cid of childIds(props)) {
+        const c = compMap.get(cid);
+        if (c) d.appendChild(renderComponent(c, compMap));
+      }
+      return d;
+    }
+    case "Row": {
+      const d = el("div", "a2row");
+      for (const cid of childIds(props)) {
+        const c = compMap.get(cid);
+        if (c) d.appendChild(renderComponent(c, compMap));
+      }
+      return d;
+    }
+    case "Text": {
+      const text = boundStr(props.text);
+      const hint = props.usageHint || "body";
+      const tag = hint === "h1" ? "h1" : hint === "h2" ? "h2" : hint === "h3" ? "h3" : hint === "h4" ? "h4" : "p";
+      const cls = "a2text a2-" + hint;
+      return el(tag, cls, text);
+    }
+    case "Divider":
+      return el("hr", "a2divider");
+    case "List": {
+      const ul = el("ul", "a2col");
+      for (const cid of childIds(props)) {
+        const c = compMap.get(cid);
+        if (c) {
+          const li = el("li");
+          li.appendChild(renderComponent(c, compMap));
+          ul.appendChild(li);
+        }
+      }
+      return ul;
+    }
+    case "Image": {
+      const src = boundStr(props.url);
+      if (/^https?:\/\//i.test(src)) {
+        const img = el("img", "a2img");
+        img.src = src;
+        const alt = boundStr(props.altText) || "Destination Postcard";
+        img.alt = alt;
+        img.title = "Click to enlarge";
+        img.onload = () => img.classList.add("loaded");
+        img.onclick = () => openLightbox(src, alt);
+        return img;
+      }
+      return el("div", "a2text a2-caption", src ? `[image: ${src}]` : "");
+    }
+    case "Icon": {
+      const name = toSnake(boundStr(props.name));
+      const s = el("span", "material-symbols-outlined", name);
+      return s;
+    }
+    default:
+      return el("div", "a2text a2-caption", `[${type || "component"}]`);
+  }
+}
+
+function renderSurface(messages, target) {
+  let rootId = null;
+  const compMap = new Map();
+
+  for (const m of messages) {
+    if (m.beginRendering && m.beginRendering.root) rootId = m.beginRendering.root;
+    if (m.surfaceUpdate && Array.isArray(m.surfaceUpdate.components)) {
+      for (const c of m.surfaceUpdate.components) {
+        if (c && c.id) compMap.set(c.id, c);
+      }
+    }
+  }
+
+  if (!rootId || !compMap.has(rootId)) return false;
+  try {
+    target.appendChild(renderComponent(compMap.get(rootId), compMap));
+    return true;
+  } catch (err) {
+    console.error("A2UI render error:", err);
+    return false;
+  }
+}
+
+function flattenText(val) {
+  const out = [];
+  function walk(x) {
+    if (x == null) return;
+    if (typeof x === "string") { if (x.trim()) out.push(x.trim()); return; }
+    if (Array.isArray(x)) { for (const v of x) walk(v); return; }
+    if (typeof x === "object") for (const k of Object.keys(x)) walk(x[k]);
+  }
+  walk(val);
+  return out.join(" ");
+}
+
+function renderReply(b, parts) {
+  b.innerHTML = "";
+  const texts = parts.filter(p => p && (p.kind === "text" || (!p.kind && p.text))).map(p => p.text || "");
+  const a2ui = parts.filter(p => p && p.kind === "a2ui" && p.data).map(p => p.data);
+
+  let fullPlainText = texts.join("\n").trim();
+  const textStr = texts.join("\n").trim();
+  if (textStr) {
+    const textWrapper = el("div");
+    textWrapper.innerHTML = parseMarkdown(textStr);
+    b.appendChild(textWrapper);
+  }
+
+  if (a2ui.length) {
+    b.classList.add("rich");
+    if (!renderSurface(a2ui, b)) {
+      const fallback = flattenText(a2ui) || "(no card content)";
+      b.appendChild(el("div", null, fallback));
+      fullPlainText += " " + fallback;
+    } else {
+      fullPlainText += " [A2UI Destination Card]";
+    }
+  }
+  if (!b.childNodes.length) b.textContent = "(no response)";
+
+  // Wire up copy button in parent content wrapper
+  const copyBtn = b.parentElement.querySelector(".copy-btn");
+  if (copyBtn) {
+    copyBtn.onclick = () => copyBubble(copyBtn, fullPlainText || b.textContent);
+  }
+
+  log.scrollTop = log.scrollHeight;
+}
+
+async function sendPrompt(text) {
+  text = (text || "").trim();
+  if (!text) return;
+  bubble("user").textContent = text;
+  input.value = "";
+  const b = bubble("agent");
+  b.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+  try {
+    const res = await fetch("/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text, user_id: activeUserId })
+    });
+    const raw = await res.text();
+    let data;
+    try { data = JSON.parse(raw); }
+    catch { throw new Error(`Server returned non-JSON (HTTP ${res.status}). ${raw.slice(0, 300)}`); }
+    renderReply(b, data.parts || []);
+  } catch (e) {
+    b.innerHTML = "";
+    b.textContent = "Error: " + e.message;
+  }
+}
+
+form.addEventListener("submit", (ev) => {
+  ev.preventDefault();
+  sendPrompt(input.value);
+});
+</script>
+</body>
+</html>
